@@ -2,9 +2,20 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 
+// --- CORS FIX ---
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(200);
+    }
+    next();
+});
+// -----------------
+
 let latestProfit = 0;
 
-// Receive profit from Tampermonkey
 app.post("/profit", (req, res) => {
     if (typeof req.body.value === "number") {
         latestProfit = req.body.value;
@@ -15,11 +26,9 @@ app.post("/profit", (req, res) => {
     }
 });
 
-// Tasker fetches this
 app.get("/profit", (req, res) => {
     res.json({ value: latestProfit });
 });
 
-// Koyeb uses PORT env variable
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server running on port", PORT));
